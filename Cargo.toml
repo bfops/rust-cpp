@@ -1,0 +1,10 @@
+[package]
+name = "gen-cpp"
+version = "0.0.0"
+authors = [
+    "Zeke Foppa <benjamin.foppa@gmail.com>",
+  ]
+
+[lib]
+name = "gen_cpp"
+path = "src/lib.rs"

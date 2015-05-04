@@ -1,0 +1,11 @@
+[package]
+name = "example"
+version = "0.0.0"
+authors = []
+
+[[bin]]
+name = "gen_bindings"
+path = "gen-bindings.rs"
+
+[dependencies.gen-cpp]
+path = ".."

@@ -1,0 +1,6 @@
+doc/
+target/
+Cargo.lock
+*.sw[a-z] # Vim swap files
+*.o
+*.a
