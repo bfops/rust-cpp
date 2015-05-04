@@ -2,6 +2,10 @@
 #define cpp_H
 
 void foo(int to_print);
-int bar();
+
+template<typename T>
+T bar() {
+  return T();
+}
 
 #endif
