@@ -1,8 +1,6 @@
 doc/
 target/
 Cargo.lock
-*.o
-*.a
 
 # Vim temp files
 *.sw[a-z]
