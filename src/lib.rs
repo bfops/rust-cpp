@@ -9,6 +9,17 @@ pub enum FunctionSignature {
   Simple(Name, Vec<Param>, Option<ReturnType>),
 }
 
+// There must be a less from-scratch way to do this in Rust..
+fn intercalate_to<I: Iterator<Item=String>>(sep: &str, mut it: I, dest: &mut String) {
+  it.next().map(|s| {
+    dest.push_str(s.borrow());
+    for s in it {
+      dest.push_str(sep);
+      dest.push_str(s.borrow());
+    }
+  });
+}
+
 pub fn gen_cpp(includes: &[String], sigs: &[FunctionSignature], dest: &mut String) {
   for inc in includes.iter() {
     dest.push_str(format!("#include {}\n", inc).borrow());
@@ -23,26 +34,19 @@ pub fn gen_cpp(includes: &[String], sigs: &[FunctionSignature], dest: &mut Strin
             &None => "void",
             &Some(ref s) => s.borrow(),
           };
-        dest.push_str(format!("extern \"C\" {} cpp_{}(", ret, name).borrow());
+        dest.push_str(format!("extern \"C\" {} cpp_{}", ret, name).borrow());
+        dest.push_str("(");
         {
-          let mut params = params.iter().enumerate();
-          params.next().map(|(i, param)| {
-            dest.push_str(format!("{} _{}", param, i).borrow());
-            for (i, param) in params {
-              dest.push_str(format!(", {} _{}", param, i).borrow());
-            }
+          let it = params.iter().enumerate().map(|(i, param)| {
+            format!("{} _{}", param, i)
           });
+          intercalate_to(", ", it, dest);
         }
         dest.push_str(") {\n");
         dest.push_str(format!("  return {}(", name).borrow());
         {
-          let len = params.len();
-          if len > 0 {
-            dest.push_str("_0");
-          }
-          for i in 1..len {
-            dest.push_str(format!(", _{}", i).borrow());
-          }
+          let it = (0..params.len()).map(|i| format!("_{}", i));
+          intercalate_to(", ", it, dest);
         }
         dest.push_str(");\n");
         dest.push_str("}\n\n");
