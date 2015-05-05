@@ -17,11 +17,13 @@ fn main() {
   build_lib(&lib_dir);
 
   generate_cpp(&include_dir, &out_dir);
+  generate_rs(&out_dir);
   compile_cpp(&out_dir);
   make_shared_lib(&lib_dir, &out_dir);
 
   println!("cargo:rustc-link-search=native={}", out_dir.to_str().unwrap());
   println!("cargo:rustc-link-lib=static=mycpplib");
+  println!("cargo:include={}", out_dir.join("mycpplib.rs").to_str().unwrap());
 }
 
 fn build_lib(lib_dir: &std::path::Path) {
@@ -56,6 +58,30 @@ fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
 
   let cpp_path = std::path::Path::new(&out_dir).join("mycpplib_c.cpp");
   let mut f = std::fs::File::create(cpp_path).unwrap();
+  f.write_all(dest.as_bytes()).unwrap();
+}
+
+fn generate_rs(out_dir: &std::path::Path) {
+  let sigs = [
+    rust_cpp::FunctionSignature::Simple(
+      "foo".to_string(),
+      "()".to_string(),
+      vec!(),
+      vec!("i32".to_string()),
+    ),
+    rust_cpp::FunctionSignature::Simple(
+      "bar".to_string(),
+      "i32".to_string(),
+      vec!("int".to_string()),
+      vec!(),
+    ),
+  ];
+
+  let mut dest = String::new();
+  rust_cpp::gen_rs(&sigs, &mut dest);
+
+  let rs_path = std::path::Path::new(&out_dir).join("mycpplib.rs");
+  let mut f = std::fs::File::create(rs_path).unwrap();
   f.write_all(dest.as_bytes()).unwrap();
 }
 
