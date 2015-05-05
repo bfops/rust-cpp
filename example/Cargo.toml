@@ -8,5 +8,5 @@ build = "build.rs"
 name = "example"
 path = "main.rs"
 
-[build-dependencies.gen-cpp]
+[build-dependencies.rust-cpp]
 path = ".."

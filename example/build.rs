@@ -1,4 +1,4 @@
-extern crate gen_cpp;
+extern crate rust_cpp;
 
 use std::io::Write;
 
@@ -37,13 +37,13 @@ fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
   // This section specifies what bindings will be generated.
   let includes = [h_path];
   let sigs = [
-    gen_cpp::FunctionSignature::Simple(
+    rust_cpp::FunctionSignature::Simple(
       "foo".to_string(),
       vec!(),
       vec!("int".to_string()),
       None,
     ),
-    gen_cpp::FunctionSignature::Simple(
+    rust_cpp::FunctionSignature::Simple(
       "bar".to_string(),
       vec!("int".to_string()),
       vec!(),
@@ -52,7 +52,7 @@ fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
   ];
 
   let mut dest = String::new();
-  gen_cpp::gen_cpp(&includes, &sigs, &mut dest);
+  rust_cpp::gen_cpp(&includes, &sigs, &mut dest);
 
   let cpp_path = std::path::Path::new(&out_dir).join("rust.cpp");
   let mut f = std::fs::File::create(cpp_path).unwrap();
