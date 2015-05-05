@@ -10,7 +10,7 @@ fn main() {
   // /usr/local/lib and /usr/local/include.
   let lib_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
   let lib_dir = std::path::Path::new(&lib_dir);
-  let lib_dir = lib_dir.join("cpp-lib");
+  let lib_dir = lib_dir.join("mycpplib");
   let include_dir = lib_dir.clone();
 
   // In practice, the library would already be built/installed.
@@ -21,7 +21,7 @@ fn main() {
   make_shared_lib(&lib_dir, &out_dir);
 
   println!("cargo:rustc-link-search=native={}", out_dir.to_str().unwrap());
-  println!("cargo:rustc-link-lib=static=cpp");
+  println!("cargo:rustc-link-lib=static=mycpplib");
 }
 
 fn build_lib(lib_dir: &std::path::Path) {
@@ -31,9 +31,10 @@ fn build_lib(lib_dir: &std::path::Path) {
 }
 
 fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
-  let h_path = include_dir.join("cpp.h");
+  let h_path = include_dir.join("mycpplib.h");
   let h_path = format!("\"{}\"", h_path.to_str().unwrap());
 
+  // This section specifies what bindings will be generated.
   let includes = [h_path];
   let sigs = [
     gen_cpp::FunctionSignature::Simple(
@@ -49,6 +50,7 @@ fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
       Some("int".to_string()),
     ),
   ];
+
   let mut dest = String::new();
   gen_cpp::gen_cpp(&includes, &sigs, &mut dest);
 
@@ -65,13 +67,13 @@ fn compile_cpp(out_dir: &std::path::Path) {
 }
 
 fn make_shared_lib(lib_dir: &std::path::Path, out_dir: &std::path::Path) {
-  let cpp_lib_path = lib_dir.join("libcpp.a");
+  let cpp_lib_path = lib_dir.join("libmycpplib.a");
   let mut cmd = std::process::Command::new("cp");
   cmd.args(&[cpp_lib_path.to_str().unwrap(), out_dir.to_str().unwrap()]);
   cmd.spawn().unwrap().wait().unwrap();
 
   let mut cmd = std::process::Command::new("ar");
   cmd.current_dir(out_dir);
-  cmd.args(&["rvs", "libcpp.a", "rust.o"]);
+  cmd.args(&["rvs", "libmycpplib.a", "rust.o"]);
   cmd.spawn().unwrap().wait().unwrap();
 }
