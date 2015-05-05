@@ -1,5 +1,4 @@
 mod mycpp {
-  #[link(name = "cpp", kind = "static")]
   extern {
     pub fn cpp_foo(_0: i32);
     pub fn cpp_bar_int() -> i32;
@@ -12,6 +11,7 @@ fn main() {
     mycpp::cpp_bar_int()
   };
   println!("cpp_bar_int returned {}", x);
+  println!("");
   println!("Calling cpp_foo");
   unsafe {
     mycpp::cpp_foo(x);

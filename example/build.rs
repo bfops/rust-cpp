@@ -6,18 +6,32 @@ fn main() {
   let out_dir = std::env::var("OUT_DIR").unwrap();
   let out_dir = std::path::Path::new(&out_dir);
 
-  let bindings_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-  let bindings_dir = std::path::Path::new(&bindings_dir);
+  // In practice, these directories would be something like
+  // /usr/local/lib and /usr/local/include.
+  let lib_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+  let lib_dir = std::path::Path::new(&lib_dir);
+  let lib_dir = lib_dir.join("cpp-lib");
+  let include_dir = lib_dir.clone();
 
-  generate_cpp(&bindings_dir, &out_dir);
-  compile_cpp(&bindings_dir, &out_dir);
-  make_shared_lib(&out_dir);
+  // In practice, the library would already be built/installed.
+  build_lib(&lib_dir);
+
+  generate_cpp(&include_dir, &out_dir);
+  compile_cpp(&out_dir);
+  make_shared_lib(&lib_dir, &out_dir);
 
   println!("cargo:rustc-link-search=native={}", out_dir.to_str().unwrap());
+  println!("cargo:rustc-link-lib=static=cpp");
 }
 
-fn generate_cpp(bindings_dir: &std::path::Path, out_dir: &std::path::Path) {
-  let h_path = bindings_dir.join("cpp.h");
+fn build_lib(lib_dir: &std::path::Path) {
+  let mut cmd = std::process::Command::new("make");
+  cmd.current_dir(lib_dir);
+  cmd.spawn().unwrap().wait().unwrap();
+}
+
+fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
+  let h_path = include_dir.join("cpp.h");
   let h_path = format!("\"{}\"", h_path.to_str().unwrap());
 
   let includes = [h_path];
@@ -43,18 +57,21 @@ fn generate_cpp(bindings_dir: &std::path::Path, out_dir: &std::path::Path) {
   f.write_all(dest.as_bytes()).unwrap();
 }
 
-fn compile_cpp(bindings_dir: &std::path::Path, out_dir: &std::path::Path) {
-  let cpp_path = bindings_dir.join("cpp.cpp");
-
+fn compile_cpp(out_dir: &std::path::Path) {
   let mut cmd = std::process::Command::new("g++");
   cmd.current_dir(out_dir);
-  cmd.args(&["-c", "rust.cpp", cpp_path.to_str().unwrap(), "-fPIC"]);
+  cmd.args(&["-c", "rust.cpp", "-fPIC"]);
   cmd.spawn().unwrap().wait().unwrap();
 }
 
-fn make_shared_lib(out_dir: &std::path::Path) {
+fn make_shared_lib(lib_dir: &std::path::Path, out_dir: &std::path::Path) {
+  let cpp_lib_path = lib_dir.join("libcpp.a");
+  let mut cmd = std::process::Command::new("cp");
+  cmd.args(&[cpp_lib_path.to_str().unwrap(), out_dir.to_str().unwrap()]);
+  cmd.spawn().unwrap().wait().unwrap();
+
   let mut cmd = std::process::Command::new("ar");
   cmd.current_dir(out_dir);
-  cmd.args(&["rvs", "libcpp.a", "rust.o", "cpp.o"]);
+  cmd.args(&["rvs", "libcpp.a", "rust.o"]);
   cmd.spawn().unwrap().wait().unwrap();
 }
