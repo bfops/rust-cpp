@@ -11,13 +11,7 @@ pub fn gen_cpp(includes: &[String], sigs: &[FunctionSignature], dest: &mut Strin
 
   for sig in sigs.iter() {
     match sig {
-      &FunctionSignature::Simple(ref name, ref template_params, ref params, ref ret) => {
-        let ret =
-          match ret {
-            &None => "void",
-            &Some(ref s) => s.borrow(),
-          };
-
+      &FunctionSignature::Simple(ref name, ref ret, ref template_params, ref params) => {
         // function header
         dest.push_str(format!("extern \"C\" {} cpp_{}", ret, name).borrow());
 

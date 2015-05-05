@@ -4,5 +4,5 @@ pub type Param = String;
 pub type ReturnType = String;
 
 pub enum FunctionSignature {
-  Simple(Name, Vec<TemplateParam>, Vec<Param>, Option<ReturnType>),
+  Simple(Name, ReturnType, Vec<TemplateParam>, Vec<Param>),
 }

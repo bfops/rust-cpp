@@ -39,22 +39,22 @@ fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
   let sigs = [
     rust_cpp::FunctionSignature::Simple(
       "foo".to_string(),
+      "void".to_string(),
       vec!(),
       vec!("int".to_string()),
-      None,
     ),
     rust_cpp::FunctionSignature::Simple(
       "bar".to_string(),
+      "int".to_string(),
       vec!("int".to_string()),
       vec!(),
-      Some("int".to_string()),
     ),
   ];
 
   let mut dest = String::new();
   rust_cpp::gen_cpp(&includes, &sigs, &mut dest);
 
-  let cpp_path = std::path::Path::new(&out_dir).join("rust.cpp");
+  let cpp_path = std::path::Path::new(&out_dir).join("mycpplib_c.cpp");
   let mut f = std::fs::File::create(cpp_path).unwrap();
   f.write_all(dest.as_bytes()).unwrap();
 }
@@ -62,7 +62,7 @@ fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
 fn compile_cpp(out_dir: &std::path::Path) {
   let mut cmd = std::process::Command::new("g++");
   cmd.current_dir(out_dir);
-  cmd.args(&["-c", "rust.cpp", "-fPIC"]);
+  cmd.args(&["-c", "mycpplib_c.cpp", "-fPIC"]);
   cmd.spawn().unwrap().wait().unwrap();
 }
 
@@ -74,6 +74,6 @@ fn make_shared_lib(lib_dir: &std::path::Path, out_dir: &std::path::Path) {
 
   let mut cmd = std::process::Command::new("ar");
   cmd.current_dir(out_dir);
-  cmd.args(&["rvs", "libmycpplib.a", "rust.o"]);
+  cmd.args(&["rvs", "libmycpplib.a", "mycpplib_c.o"]);
   cmd.spawn().unwrap().wait().unwrap();
 }
