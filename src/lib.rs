@@ -1,3 +1,5 @@
+#![deny(warnings)]
+
 mod gen_cpp;
 mod intercalate;
 mod types;
