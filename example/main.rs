@@ -16,5 +16,4 @@ fn main() {
   unsafe {
     mycpp::cpp_foo(x);
   }
-  println!("Done");
 }

@@ -2,10 +2,11 @@
 name = "example"
 version = "0.0.0"
 authors = []
+build = "build.rs"
 
 [[bin]]
-name = "gen_bindings"
-path = "gen-bindings.rs"
+name = "example"
+path = "main.rs"
 
-[dependencies.gen-cpp]
+[build-dependencies.gen-cpp]
 path = ".."
