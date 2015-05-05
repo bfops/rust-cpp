@@ -8,5 +8,4 @@ based on a C++ header file, or trying to link directly to C++ by parsing that
 header file. The trade off is that this requires generating and compiling C++
 code on every build (although there are lots of optimizations to be made).
 
-Example usage is in the `example` directory, and can be built using `make`.
-(The `Cargo.toml` is used by the `Makefile`, and not the other way around).
+Example usage is in the `example` directory, and can be run using `cargo run`.
