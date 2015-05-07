@@ -38,13 +38,13 @@ fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
   // This section specifies what bindings will be generated.
   let includes = [h_path];
   let sigs = [
-    rust_cpp::FunctionSignature::Simple(
+    rust_cpp::Binding::FreeFunction(
       "foo".to_string(),
       "void".to_string(),
       vec!(),
       vec!("int".to_string()),
     ),
-    rust_cpp::FunctionSignature::Simple(
+    rust_cpp::Binding::FreeFunction(
       "bar".to_string(),
       "int".to_string(),
       vec!("int".to_string()),
@@ -62,13 +62,13 @@ fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
 
 fn generate_rs(out_dir: &std::path::Path) {
   let sigs = [
-    rust_cpp::FunctionSignature::Simple(
+    rust_cpp::Binding::FreeFunction(
       "foo".to_string(),
       "()".to_string(),
       vec!(),
       vec!("i32".to_string()),
     ),
-    rust_cpp::FunctionSignature::Simple(
+    rust_cpp::Binding::FreeFunction(
       "bar".to_string(),
       "i32".to_string(),
       vec!("int".to_string()),

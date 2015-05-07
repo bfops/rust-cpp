@@ -1,14 +1,14 @@
 use std::borrow::Borrow;
 
 use intercalate::intercalate_to;
-use types::FunctionSignature;
+use types::Binding;
 
-pub fn gen_rs(sigs: &[FunctionSignature], dest: &mut String) {
+pub fn gen_rs(binds: &[Binding], dest: &mut String) {
   dest.push_str("extern {\n");
 
-  for sig in sigs.iter() {
-    match sig {
-      &FunctionSignature::Simple(ref name, ref ret, ref template_params, ref params) => {
+  for bind in binds.iter() {
+    match bind {
+      &Binding::FreeFunction(ref name, ref ret, ref template_params, ref params) => {
         // function header
         dest.push_str(format!("  pub fn cpp_{}", name).borrow());
 

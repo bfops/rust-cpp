@@ -1,17 +1,17 @@
 use std::borrow::Borrow;
 
 use intercalate::intercalate_to;
-use types::FunctionSignature;
+use types::Binding;
 
-pub fn gen_cpp(includes: &[String], sigs: &[FunctionSignature], dest: &mut String) {
+pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
   for inc in includes.iter() {
     dest.push_str(format!("#include {}\n", inc).borrow());
   }
   dest.push_str("\n");
 
-  for sig in sigs.iter() {
-    match sig {
-      &FunctionSignature::Simple(ref name, ref ret, ref template_params, ref params) => {
+  for bind in binds.iter() {
+    match bind {
+      &Binding::FreeFunction(ref name, ref ret, ref template_params, ref params) => {
         // function header
         dest.push_str(format!("extern \"C\" {} cpp_{}", ret, name).borrow());
 
