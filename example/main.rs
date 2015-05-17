@@ -1,4 +1,8 @@
-mod mycpplib;
+extern crate libc;
+
+mod mycpplib {
+  include!(concat!(env!("OUT_DIR"), "/mycpplib.rs"));
+}
 
 fn main() {
   println!("[rust] Calling cpp_bar_int");

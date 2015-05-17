@@ -1,6 +1,11 @@
+#![deny(warnings)]
+
+extern crate bindgen;
 extern crate rust_cpp;
 
 use std::io::Write;
+
+// TODO: Use `Writer`s instead of `&mut String`s.
 
 fn main() {
   let out_dir = std::env::var("OUT_DIR").unwrap();
@@ -16,27 +21,6 @@ fn main() {
   // In practice, the library would already be built/installed.
   build_lib(&lib_dir);
 
-  generate_cpp(&include_dir, &out_dir);
-  generate_rs(&out_dir);
-  compile_cpp(&out_dir);
-  make_shared_lib(&lib_dir, &out_dir);
-
-  println!("cargo:rustc-link-search=native={}", out_dir.to_str().unwrap());
-  println!("cargo:rustc-link-lib=static=mycpplib");
-}
-
-fn build_lib(lib_dir: &std::path::Path) {
-  let mut cmd = std::process::Command::new("make");
-  cmd.current_dir(lib_dir);
-  cmd.spawn().unwrap().wait().unwrap();
-}
-
-fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
-  let h_path = include_dir.join("mycpplib.h");
-  let h_path = format!("\"{}\"", h_path.to_str().unwrap());
-
-  // This section specifies what bindings will be generated.
-  let includes = [h_path];
   let sigs = [
     rust_cpp::Binding::FreeFunction(
       "foo".to_string(),
@@ -52,8 +36,40 @@ fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
     ),
   ];
 
+  generate_header(&out_dir, &sigs);
+  generate_cpp(&out_dir, &include_dir, &sigs);
+
+  compile_cpp(&out_dir);
+  make_shared_lib(&lib_dir, &out_dir);
+
+  generate_rs(&out_dir);
+
+  println!("cargo:rustc-link-search=native={}", out_dir.to_str().unwrap());
+  println!("cargo:rustc-link-lib=static=mycpplib");
+}
+
+fn build_lib(lib_dir: &std::path::Path) {
+  let mut cmd = std::process::Command::new("make");
+  cmd.current_dir(lib_dir);
+  cmd.spawn().unwrap().wait().unwrap();
+}
+
+fn generate_header(out_dir: &std::path::Path, sigs: &[rust_cpp::Binding]) {
   let mut dest = String::new();
-  rust_cpp::gen_cpp(&includes, &sigs, &mut dest);
+  rust_cpp::gen_header(&[], sigs, &mut dest);
+
+  let h_path = std::path::Path::new(&out_dir).join("mycpplib_c.h");
+  let mut f = std::fs::File::create(h_path).unwrap();
+  f.write_all(dest.as_bytes()).unwrap();
+}
+
+fn generate_cpp(out_dir: &std::path::Path, include_dir: &std::path::Path, sigs: &[rust_cpp::Binding]) {
+  let h_path = include_dir.join("mycpplib.h");
+  let h_path = format!("\"{}\"", h_path.to_str().unwrap());
+  let includes = [h_path];
+
+  let mut dest = String::new();
+  rust_cpp::gen_cpp(&includes, sigs, &mut dest);
 
   let cpp_path = std::path::Path::new(&out_dir).join("mycpplib_c.cpp");
   let mut f = std::fs::File::create(cpp_path).unwrap();
@@ -61,27 +77,18 @@ fn generate_cpp(include_dir: &std::path::Path, out_dir: &std::path::Path) {
 }
 
 fn generate_rs(out_dir: &std::path::Path) {
-  let sigs = [
-    rust_cpp::Binding::FreeFunction(
-      "foo".to_string(),
-      "()".to_string(),
-      vec!(),
-      vec!("i32".to_string()),
-    ),
-    rust_cpp::Binding::FreeFunction(
-      "bar".to_string(),
-      "i32".to_string(),
-      vec!("int".to_string()),
-      vec!(),
-    ),
-  ];
-
-  let mut dest = String::new();
-  rust_cpp::gen_rs(&sigs, &mut dest);
-
   let rs_path = std::path::Path::new(&out_dir).join("mycpplib.rs");
-  let mut f = std::fs::File::create(rs_path).unwrap();
-  f.write_all(dest.as_bytes()).unwrap();
+
+  let mut bindings = bindgen::builder();
+  bindings.forbid_unknown_types();
+
+  let h_path = std::path::Path::new(&out_dir).join("mycpplib_c.h");
+  let h_path = String::from(h_path.to_str().unwrap());
+  bindings.header(h_path);
+
+  let bindings = bindings.generate();
+  let bindings = bindings.unwrap();
+  bindings.write_to_file(rs_path).unwrap();
 }
 
 fn compile_cpp(out_dir: &std::path::Path) {
@@ -91,6 +98,7 @@ fn compile_cpp(out_dir: &std::path::Path) {
   cmd.spawn().unwrap().wait().unwrap();
 }
 
+// TODO: Link to the C++ and C versions separately.
 fn make_shared_lib(lib_dir: &std::path::Path, out_dir: &std::path::Path) {
   let cpp_lib_path = lib_dir.join("libmycpplib.a");
   let mut cmd = std::process::Command::new("cp");

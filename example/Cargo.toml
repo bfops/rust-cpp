@@ -10,3 +10,9 @@ path = "main.rs"
 
 [build-dependencies.rust-cpp]
 path = ".."
+
+[build-dependencies.bindgen]
+git = "https://github.com/crabtw/rust-bindgen"
+
+[dependencies]
+libc = "*"
