@@ -17,4 +17,21 @@ fn main() {
     mycpplib::cpp_foo(x)
   };
   println!("[rust] cpp_foo returned {:?}", x);
+  println!("");
+  println!("[rust] Calling cpp_Foo_int_new_int");
+  let p_foo = unsafe {
+    mycpplib::cpp_Foo_int_new_int(3)
+  };
+  println!("");
+  println!("[rust] Calling cpp_Foo_int_x_");
+  let x_ = unsafe {
+    let p_x_ = mycpplib::cpp_Foo_int_x_(p_foo) as *const libc::c_int;
+    *p_x_
+  };
+  println!("[rust] cpp_Foo_x_ returned &{}", x_);
+  println!("");
+  println!("[rust] Calling cpp_Foo_int_delete");
+  unsafe {
+    mycpplib::cpp_Foo_int_delete(p_foo);
+  }
 }

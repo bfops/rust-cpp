@@ -1,16 +1,21 @@
-#ifndef cpp_H
-#define cpp_H
+#ifndef mycpplib_H
+#define mycpplib_H
 
 #include <cstdio>
 
-struct Foo {
-  int x_;
-};
-
 template <typename T>
-struct Bar {
-  Foo foo_;
+struct Foo {
   T x_;
+
+  Foo() {}
+
+  Foo(T x) {
+    x_ = x;
+  }
+
+  virtual ~Foo() {
+    printf("[C++] ~Foo called\n");
+  }
 };
 
 void foo(int to_print);

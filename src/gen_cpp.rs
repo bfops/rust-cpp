@@ -55,7 +55,40 @@ pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
 
         dest.push_str("\n");
       },
-      &Binding::Struct(ref name, ref template_params, ref fields) => {
+      &Binding::Struct(ref name, ref template_params, ref fields, ref ctors) => {
+        dest.push_str(format!("void* cpp_{}_new() {{\n", name).borrow());
+        dest.push_str(format!("  return new {}();\n", name).borrow());
+        dest.push_str("}\n");
+
+        for params in ctors.iter() {
+          dest.push_str(format!("void* cpp_{}_new", name).borrow());
+          for param in params.iter() {
+            dest.push_str("_");
+            dest.push_str(param.borrow());
+          }
+          dest.push_str("(");
+          {
+            let it = params.iter().enumerate().map(|(i, s)| format!("{} _{}", s, i));
+            intercalate_to(", ", it, dest);
+          }
+          dest.push_str(") {\n");
+
+          dest.push_str(format!("  return new {}(", name).borrow());
+          {
+            let it = (0..params.len()).map(|i| format!("{}", i));
+            intercalate_to(", ", it, dest);
+          }
+          dest.push_str(");\n");
+
+          dest.push_str("}\n");
+        }
+        dest.push_str("\n");
+
+        dest.push_str(format!("void cpp_{}_delete(void* p) {{\n", name).borrow());
+        dest.push_str("  delete p;\n");
+        dest.push_str("}\n");
+        dest.push_str("\n");
+
         for field in fields.iter() {
           dest.push_str(format!("void* cpp_{}", name).borrow());
           for param in template_params.iter() {
@@ -68,7 +101,6 @@ pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
           dest.push_str(format!("  {}* p_cpp = &p;\n", name).borrow());
           dest.push_str(format!("  return &p_cpp->{};\n", field).borrow());
           dest.push_str("}\n");
-
           dest.push_str("\n");
 
           dest.push_str(format!("const void* cpp_{}", name).borrow());
@@ -82,7 +114,6 @@ pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
           dest.push_str(format!("  const {}* p_cpp = &p;\n", name).borrow());
           dest.push_str(format!("  return &p_cpp->{};\n", field).borrow());
           dest.push_str("}\n");
-
           dest.push_str("\n");
         }
       },

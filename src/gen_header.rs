@@ -34,7 +34,42 @@ pub fn gen_header(includes: &[String], binds: &[Binding], dest: &mut String) {
         dest.push_str(");\n");
         dest.push_str("\n");
       },
-      &Binding::Struct(ref name, ref template_params, ref fields) => {
+      &Binding::Struct(ref name, ref template_params, ref fields, ref ctors) => {
+        dest.push_str(format!("void* cpp_{}", name).borrow());
+        for param in template_params.iter() {
+          dest.push_str("_");
+          dest.push_str(param.borrow());
+        }
+        dest.push_str("_new();\n");
+
+        for params in ctors.iter() {
+          dest.push_str(format!("void* cpp_{}", name).borrow());
+          for param in template_params.iter() {
+            dest.push_str("_");
+            dest.push_str(param.borrow());
+          }
+          dest.push_str("_new");
+          for param in params.iter() {
+            dest.push_str("_");
+            dest.push_str(param.borrow());
+          }
+          dest.push_str("(");
+          {
+            let it = params.iter().map(|s| s.clone());
+            intercalate_to(", ", it, dest);
+          }
+          dest.push_str(");\n");
+        }
+        dest.push_str("\n");
+
+        dest.push_str(format!("void cpp_{}", name).borrow());
+        for param in template_params.iter() {
+          dest.push_str("_");
+          dest.push_str(param.borrow());
+        }
+        dest.push_str(format!("_delete(void* p_{});\n", name).borrow());
+        dest.push_str("\n");
+
         for field in fields.iter() {
           dest.push_str(format!("void* cpp_{}", name).borrow());
           for param in template_params.iter() {

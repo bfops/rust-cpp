@@ -36,16 +36,9 @@ fn main() {
     ),
     rust_cpp::Binding::Struct(
       "Foo".to_string(),
-      vec!(),
-      vec!("x_".to_string()),
-    ),
-    rust_cpp::Binding::Struct(
-      "Bar".to_string(),
       vec!("int".to_string()),
-      vec!(
-        "foo_".to_string(),
-        "x_".to_string(),
-      ),
+      vec!("x_".to_string()),
+      vec!(vec!("int".to_string())),
     ),
   ];
 
