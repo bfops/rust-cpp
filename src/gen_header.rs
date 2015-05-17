@@ -32,11 +32,31 @@ pub fn gen_header(includes: &[String], binds: &[Binding], dest: &mut String) {
           intercalate_to(", ", it, dest);
         }
         dest.push_str(");\n");
+        dest.push_str("\n");
+      },
+      &Binding::Struct(ref name, ref template_params, ref fields) => {
+        for field in fields.iter() {
+          dest.push_str(format!("void* cpp_{}", name).borrow());
+          for param in template_params.iter() {
+            dest.push_str("_");
+            dest.push_str(param.borrow());
+          }
+          dest.push_str(format!("_{}", field).borrow());
+          dest.push_str(format!("(void* p_{});\n", name).borrow());
+
+          dest.push_str(format!("const void* cpp_{}", name).borrow());
+          for param in template_params.iter() {
+            dest.push_str("_");
+            dest.push_str(param.borrow());
+          }
+          dest.push_str(format!("_{}_const", field).borrow());
+          dest.push_str(format!("(const void* p_{});\n", name).borrow());
+
+          dest.push_str("\n");
+        }
       },
     }
   }
-
-  dest.push_str("\n");
 
   dest.push_str("#ifdef __cplusplus\n");
   dest.push_str("}\n");

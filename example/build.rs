@@ -34,6 +34,19 @@ fn main() {
       vec!("int".to_string()),
       vec!(),
     ),
+    rust_cpp::Binding::Struct(
+      "Foo".to_string(),
+      vec!(),
+      vec!("x_".to_string()),
+    ),
+    rust_cpp::Binding::Struct(
+      "Bar".to_string(),
+      vec!("int".to_string()),
+      vec!(
+        "foo_".to_string(),
+        "x_".to_string(),
+      ),
+    ),
   ];
 
   generate_header(&out_dir, &sigs);
@@ -64,9 +77,11 @@ fn generate_header(out_dir: &std::path::Path, sigs: &[rust_cpp::Binding]) {
 }
 
 fn generate_cpp(out_dir: &std::path::Path, include_dir: &std::path::Path, sigs: &[rust_cpp::Binding]) {
-  let h_path = include_dir.join("mycpplib.h");
-  let h_path = format!("\"{}\"", h_path.to_str().unwrap());
-  let includes = [h_path];
+  let lib_h_path = include_dir.join("mycpplib.h");
+  let lib_h_path = format!("\"{}\"", lib_h_path.to_str().unwrap());
+  let c_h_path = out_dir.join("mycpplib_c.h");
+  let c_h_path = format!("\"{}\"", c_h_path.to_str().unwrap());
+  let includes = [c_h_path, lib_h_path];
 
   let mut dest = String::new();
   rust_cpp::gen_cpp(&includes, sigs, &mut dest);

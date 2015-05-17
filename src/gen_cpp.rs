@@ -9,11 +9,14 @@ pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
   }
   dest.push_str("\n");
 
+  dest.push_str("extern \"C\" {\n");
+  dest.push_str("\n");
+
   for bind in binds.iter() {
     match bind {
       &Binding::FreeFunction(ref name, ref ret, ref template_params, ref params) => {
         // function header
-        dest.push_str(format!("extern \"C\" {} cpp_{}", ret, name).borrow());
+        dest.push_str(format!("{} cpp_{}", ret, name).borrow());
 
         // add template params to the function name
         for param in template_params.iter() {
@@ -48,8 +51,43 @@ pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
           intercalate_to(", ", it, dest);
         }
         dest.push_str(");\n");
-        dest.push_str("}\n\n");
+        dest.push_str("}\n");
+
+        dest.push_str("\n");
+      },
+      &Binding::Struct(ref name, ref template_params, ref fields) => {
+        for field in fields.iter() {
+          dest.push_str(format!("void* cpp_{}", name).borrow());
+          for param in template_params.iter() {
+            dest.push_str("_");
+            dest.push_str(param.borrow());
+          }
+          dest.push_str(format!("_{}", field).borrow());
+
+          dest.push_str(format!("(void* p) {{\n").borrow());
+          dest.push_str(format!("  {}* p_cpp = &p;\n", name).borrow());
+          dest.push_str(format!("  return &p_cpp->{};\n", field).borrow());
+          dest.push_str("}\n");
+
+          dest.push_str("\n");
+
+          dest.push_str(format!("const void* cpp_{}", name).borrow());
+          for param in template_params.iter() {
+            dest.push_str("_");
+            dest.push_str(param.borrow());
+          }
+          dest.push_str(format!("_{}_const", field).borrow());
+
+          dest.push_str(format!("(const void* p) {{\n").borrow());
+          dest.push_str(format!("  const {}* p_cpp = &p;\n", name).borrow());
+          dest.push_str(format!("  return &p_cpp->{};\n", field).borrow());
+          dest.push_str("}\n");
+
+          dest.push_str("\n");
+        }
       },
     }
   }
+
+  dest.push_str("}\n");
 }

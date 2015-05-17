@@ -1,5 +1,6 @@
 extern crate libc;
 
+#[allow(dead_code)]
 mod mycpplib {
   include!(concat!(env!("OUT_DIR"), "/mycpplib.rs"));
 }
