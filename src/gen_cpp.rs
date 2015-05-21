@@ -3,6 +3,15 @@ use std::borrow::Borrow;
 use intercalate::intercalate_to;
 use types::Binding;
 
+fn push_template_params(template_params: &Vec<String>, dest: &mut String) {
+  if template_params.len() > 0 {
+    dest.push_str("<");
+    let it = template_params.iter().map(|x| x.clone());
+    intercalate_to(", ", it, dest);
+    dest.push_str(">");
+  }
+}
+
 pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
   for inc in includes.iter() {
     dest.push_str(format!("#include {}\n", inc).borrow());
@@ -36,13 +45,7 @@ pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
         // function definition
         dest.push_str(format!("  return {}", name).borrow());
 
-        // template parameters to the C++ call
-        if template_params.len() > 0 {
-          dest.push_str("<");
-          let it = template_params.iter().map(|x| x.clone());
-          intercalate_to(", ", it, dest);
-          dest.push_str(">");
-        }
+        push_template_params(&template_params, dest);
 
         // parameters to the C++ call
         dest.push_str("(");
@@ -56,12 +59,25 @@ pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
         dest.push_str("\n");
       },
       &Binding::Struct(ref name, ref template_params, ref fields, ref ctors) => {
-        dest.push_str(format!("void* cpp_{}_new() {{\n", name).borrow());
-        dest.push_str(format!("  return new {}();\n", name).borrow());
+        dest.push_str(format!("void* cpp_{}", name).borrow());
+        for param in template_params.iter() {
+          dest.push_str("_");
+          dest.push_str(param.borrow());
+        }
+        dest.push_str("_new() {\n");
+        dest.push_str(format!("  return new {}", name).borrow());
+        push_template_params(&template_params, dest);
+        dest.push_str("();\n");
         dest.push_str("}\n");
+        dest.push_str("\n");
 
         for params in ctors.iter() {
-          dest.push_str(format!("void* cpp_{}_new", name).borrow());
+          dest.push_str(format!("void* cpp_{}", name).borrow());
+          for param in template_params.iter() {
+            dest.push_str("_");
+            dest.push_str(param.borrow());
+          }
+          dest.push_str("_new");
           for param in params.iter() {
             dest.push_str("_");
             dest.push_str(param.borrow());
@@ -73,19 +89,28 @@ pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
           }
           dest.push_str(") {\n");
 
-          dest.push_str(format!("  return new {}(", name).borrow());
+          dest.push_str(format!("  return new {}", name).borrow());
+          push_template_params(&template_params, dest);
+          dest.push_str("(");
           {
-            let it = (0..params.len()).map(|i| format!("{}", i));
+            let it = (0..params.len()).map(|i| format!("_{}", i));
             intercalate_to(", ", it, dest);
           }
           dest.push_str(");\n");
 
           dest.push_str("}\n");
+          dest.push_str("\n");
         }
-        dest.push_str("\n");
 
-        dest.push_str(format!("void cpp_{}_delete(void* p) {{\n", name).borrow());
-        dest.push_str("  delete p;\n");
+        dest.push_str(format!("void cpp_{}", name).borrow());
+        for param in template_params.iter() {
+          dest.push_str("_");
+          dest.push_str(param.borrow());
+        }
+        dest.push_str("_delete(void* p) {\n");
+        dest.push_str(format!("  delete ({}", name).borrow());
+        push_template_params(&template_params, dest);
+        dest.push_str("*)p;\n");
         dest.push_str("}\n");
         dest.push_str("\n");
 
@@ -98,8 +123,9 @@ pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
           dest.push_str(format!("_{}", field).borrow());
 
           dest.push_str(format!("(void* p) {{\n").borrow());
-          dest.push_str(format!("  {}* p_cpp = &p;\n", name).borrow());
-          dest.push_str(format!("  return &p_cpp->{};\n", field).borrow());
+          dest.push_str(format!("  return &(({}", name).borrow());
+          push_template_params(&template_params, dest);
+          dest.push_str(format!("*)p)->{};\n", field).borrow());
           dest.push_str("}\n");
           dest.push_str("\n");
 
@@ -111,8 +137,9 @@ pub fn gen_cpp(includes: &[String], binds: &[Binding], dest: &mut String) {
           dest.push_str(format!("_{}_const", field).borrow());
 
           dest.push_str(format!("(const void* p) {{\n").borrow());
-          dest.push_str(format!("  const {}* p_cpp = &p;\n", name).borrow());
-          dest.push_str(format!("  return &p_cpp->{};\n", field).borrow());
+          dest.push_str(format!("  return &((const {}", name).borrow());
+          push_template_params(&template_params, dest);
+          dest.push_str(format!("*)p)->{};\n", field).borrow());
           dest.push_str("}\n");
           dest.push_str("\n");
         }
