@@ -18,7 +18,7 @@ fn main() {
   };
   println!("[rust] cpp_foo returned {:?}", x);
   println!("");
-  println!("[rust] Calling cpp_Foo_int_new_int");
+  println!("[rust] Calling cpp_Foo_int_new_int with 3");
   let p_foo = unsafe {
     mycpplib::cpp_Foo_int_new_int(3)
   };

@@ -52,6 +52,7 @@ fn main() {
 
   println!("cargo:rustc-link-search=native={}", out_dir.to_str().unwrap());
   println!("cargo:rustc-link-lib=static=mycpplib");
+  println!("cargo:rustc-link-lib=static=stdc++");
 }
 
 fn build_lib(lib_dir: &std::path::Path) {
