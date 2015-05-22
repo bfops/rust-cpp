@@ -58,7 +58,8 @@ fn main() {
 fn build_lib(lib_dir: &std::path::Path) {
   let mut cmd = std::process::Command::new("make");
   cmd.current_dir(lib_dir);
-  cmd.spawn().unwrap().wait().unwrap();
+  let result = cmd.spawn().unwrap().wait().unwrap();
+  assert!(result.success());
 }
 
 fn generate_header(out_dir: &std::path::Path, sigs: &[rust_cpp::Binding]) {
@@ -104,7 +105,8 @@ fn compile_cpp(out_dir: &std::path::Path) {
   let mut cmd = std::process::Command::new("g++");
   cmd.current_dir(out_dir);
   cmd.args(&["-c", "mycpplib_c.cpp", "-fPIC"]);
-  cmd.spawn().unwrap().wait().unwrap();
+  let result = cmd.spawn().unwrap().wait().unwrap();
+  assert!(result.success());
 }
 
 // TODO: Link to the C++ and C versions separately.
@@ -112,10 +114,12 @@ fn make_shared_lib(lib_dir: &std::path::Path, out_dir: &std::path::Path) {
   let cpp_lib_path = lib_dir.join("libmycpplib.a");
   let mut cmd = std::process::Command::new("cp");
   cmd.args(&[cpp_lib_path.to_str().unwrap(), out_dir.to_str().unwrap()]);
-  cmd.spawn().unwrap().wait().unwrap();
+  let result = cmd.spawn().unwrap().wait().unwrap();
+  assert!(result.success());
 
   let mut cmd = std::process::Command::new("ar");
   cmd.current_dir(out_dir);
   cmd.args(&["rvs", "libmycpplib.a", "mycpplib_c.o"]);
-  cmd.spawn().unwrap().wait().unwrap();
+  let result = cmd.spawn().unwrap().wait().unwrap();
+  assert!(result.success());
 }
