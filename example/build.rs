@@ -1,7 +1,7 @@
 #![deny(warnings)]
 
 extern crate bindgen;
-extern crate rust_cpp;
+extern crate cpp_bindgen;
 
 use std::io::Write;
 
@@ -22,19 +22,19 @@ fn main() {
   build_lib(&lib_dir);
 
   let sigs = [
-    rust_cpp::Binding::FreeFunction(
+    cpp_bindgen::Binding::FreeFunction(
       "foo".to_string(),
       "void".to_string(),
       vec!(),
       vec!("int".to_string()),
     ),
-    rust_cpp::Binding::FreeFunction(
+    cpp_bindgen::Binding::FreeFunction(
       "bar".to_string(),
       "int".to_string(),
       vec!("int".to_string()),
       vec!(),
     ),
-    rust_cpp::Binding::Struct(
+    cpp_bindgen::Binding::Struct(
       "Foo".to_string(),
       vec!("int".to_string()),
       vec!("x_".to_string()),
@@ -62,16 +62,16 @@ fn build_lib(lib_dir: &std::path::Path) {
   assert!(result.success());
 }
 
-fn generate_header(out_dir: &std::path::Path, sigs: &[rust_cpp::Binding]) {
+fn generate_header(out_dir: &std::path::Path, sigs: &[cpp_bindgen::Binding]) {
   let mut dest = String::new();
-  rust_cpp::gen_header(&[], sigs, &mut dest);
+  cpp_bindgen::gen_header(&[], sigs, &mut dest);
 
   let h_path = std::path::Path::new(&out_dir).join("mycpplib_c.h");
   let mut f = std::fs::File::create(h_path).unwrap();
   f.write_all(dest.as_bytes()).unwrap();
 }
 
-fn generate_cpp(out_dir: &std::path::Path, include_dir: &std::path::Path, sigs: &[rust_cpp::Binding]) {
+fn generate_cpp(out_dir: &std::path::Path, include_dir: &std::path::Path, sigs: &[cpp_bindgen::Binding]) {
   let lib_h_path = include_dir.join("mycpplib.h");
   let lib_h_path = format!("\"{}\"", lib_h_path.to_str().unwrap());
   let c_h_path = out_dir.join("mycpplib_c.h");
@@ -79,7 +79,7 @@ fn generate_cpp(out_dir: &std::path::Path, include_dir: &std::path::Path, sigs: 
   let includes = [c_h_path, lib_h_path];
 
   let mut dest = String::new();
-  rust_cpp::gen_cpp(&includes, sigs, &mut dest);
+  cpp_bindgen::gen_cpp(&includes, sigs, &mut dest);
 
   let cpp_path = std::path::Path::new(&out_dir).join("mycpplib_c.cpp");
   let mut f = std::fs::File::create(cpp_path).unwrap();

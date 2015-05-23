@@ -8,7 +8,7 @@ build = "build.rs"
 name = "example"
 path = "main.rs"
 
-[build-dependencies.rust-cpp]
+[build-dependencies.cpp-bindgen]
 path = ".."
 
 [build-dependencies.bindgen]
