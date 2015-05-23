@@ -1,3 +1,6 @@
+#![feature(plugin)]
+#![plugin(cpp_bindgen)]
+
 extern crate libc;
 
 #[allow(dead_code)]
@@ -6,6 +9,8 @@ mod mycpplib {
 }
 
 fn main() {
+  cpp!();
+
   println!("[rust] Calling cpp_bar_int");
   let x = unsafe {
     mycpplib::cpp_bar_int()

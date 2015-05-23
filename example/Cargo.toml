@@ -16,3 +16,6 @@ git = "https://github.com/crabtw/rust-bindgen"
 
 [dependencies]
 libc = "*"
+
+[dependencies.cpp-bindgen-plugin]
+path = "../plugin"

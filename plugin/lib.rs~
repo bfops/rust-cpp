@@ -1,0 +1,19 @@
+#![feature(plugin_registrar, rustc_private)]
+
+extern crate syntax;
+extern crate rustc;
+
+use syntax::codemap::Span;
+use syntax::ast::TokenTree;
+use syntax::ext::base::{ExtCtxt, MacResult, MacEager};
+use syntax::ext::build::AstBuilder;
+use rustc::plugin::Registry;
+
+fn cpp(cxt: &mut ExtCtxt, span: Span, _: &[TokenTree]) -> Box<MacResult + 'static> {
+  MacEager::expr(cxt.expr_tuple(span, vec!()))
+}
+
+#[plugin_registrar]
+pub fn plugin_registrar(reg: &mut Registry) {
+  reg.register_macro("cpp", cpp);
+}

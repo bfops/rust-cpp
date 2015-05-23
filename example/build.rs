@@ -8,6 +8,19 @@ use std::io::Write;
 // TODO: Use `Writer`s instead of `&mut String`s.
 
 fn main() {
+  match std::env::var("PREBUILD") {
+    Ok(val) => {
+      println!("Found PREBUILD={}. Skipping build.rs..", val);
+      return
+    },
+    Err(std::env::VarError::NotPresent) => {
+      println!("Running main build step..");
+    },
+    e =>{
+      e.unwrap();
+    }
+  }
+
   let out_dir = std::env::var("OUT_DIR").unwrap();
   let out_dir = std::path::Path::new(&out_dir);
 

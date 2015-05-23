@@ -1,0 +1,14 @@
+[package]
+name = "cpp-bindgen-plugin"
+version = "0.0.0"
+authors = [
+  "Zeke Foppa <benjamin.foppa@gmail.com>",
+]
+
+[lib]
+name = "cpp_bindgen"
+path = "lib.rs"
+crate-type = ["dylib"]
+
+[dependencies.cpp-bindgen]
+path = ".."
