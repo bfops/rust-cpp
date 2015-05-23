@@ -2,5 +2,8 @@ doc/
 target/
 Cargo.lock
 
-# Vim temp files
+# vim temp files
 *.sw[a-z]
+
+# emacs temp files
+\#*
