@@ -1,3 +1,7 @@
+# This repo is being abandoned
+The approach below isn't workable enough with the existing compiler extension capabilities, so using [michaelwu's rust-bindgen fork](https://github.com/michaelwu/rust-bindgen/tree/sm-hacks) is a lot less work.
+
+<br /><br />
 A library to help ease the pain of calling C++ functions from Rust.
 The basic idea is to generate a C-compatible library from a list of
 C++ functions and structs to wrap, and then to use
